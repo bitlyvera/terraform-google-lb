@@ -14,23 +14,33 @@
  * limitations under the License.
  */
 
+variable "lb_protocol" {
+  description = "(optional) The protocol which needs to be proxied."
+  default     = "HTTP"
+}
+
+variable "ip_address" {
+  description = "(optional) The IP address for the forwarding rule"
+  default     = ""
+}
+
 variable project {
-  description = "The project to deploy to, if not set the default provider project is used."
+  description = "(optional) The project to deploy to, if not set the default provider project is used."
   default     = ""
 }
 
 variable region {
-  description = "Region for cloud resources."
+  description = "(optional) Region for cloud resources."
   default     = "us-central1"
 }
 
 variable network {
-  description = "Name of the network to create resources in."
+  description = "(optional) Name of the network to create resources in."
   default     = "default"
 }
 
 variable firewall_project {
-  description = "Name of the project to create the firewall rule in. Useful for shared VPC. Default is var.project."
+  description = "(optional) Name of the project to create the firewall rule in. Useful for shared VPC. Default is var.project."
   default     = ""
 }
 
@@ -39,7 +49,7 @@ variable name {
 }
 
 variable service_port {
-  description = "TCP port your service is listening on."
+  description = "The port your service is listening on."
 }
 
 variable target_tags {
@@ -48,6 +58,6 @@ variable target_tags {
 }
 
 variable session_affinity {
-  description = "How to distribute load. Options are `NONE`, `CLIENT_IP` and `CLIENT_IP_PROTO`"
+  description = "(optional) How to distribute load. Options are `NONE`, `CLIENT_IP` and `CLIENT_IP_PROTO`"
   default     = "NONE"
 }

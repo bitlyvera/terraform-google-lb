@@ -16,7 +16,7 @@
 
 output target_pool {
   description = "The `self_link` to the target pool resource created."
-  value       = "${google_compute_target_pool.default.self_link}"
+  value       = "${element(coalescelist(google_compute_target_pool.default_http.*.self_link,google_compute_target_pool.default_non_http.*.self_link),0)}"
 }
 
 output external_ip {

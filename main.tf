@@ -16,37 +16,51 @@
 
 resource "google_compute_forwarding_rule" "default" {
   project               = "${var.project}"
-  name                  = "${var.name}"
-  target                = "${google_compute_target_pool.default.self_link}"
+  name                  = "${var.name}-${lower(var.lb_protocol)}-${var.network}"
+  target                = "${element(concat(google_compute_target_pool.default_http.*.self_link, google_compute_target_pool.default_non_http.*.self_link), 0)}"
   load_balancing_scheme = "EXTERNAL"
   port_range            = "${var.service_port}"
+  ip_protocol           = "${replace(upper(var.lb_protocol),"HTTP","") != var.lb_protocol ? "TCP" : upper(var.lb_protocol)}"
+  ip_address            = "${var.ip_address}"
+
+  lifecycle = {
+    create_before_destroy = true
+  }
 }
 
-resource "google_compute_target_pool" "default" {
+resource "google_compute_target_pool" "default_non_http" {
+  count            = "${replace(lower(var.lb_protocol), "http", "") == lower(var.lb_protocol) ? 1 : 0}"
   project          = "${var.project}"
-  name             = "${var.name}"
+  name             = "${var.name}-${lower(var.lb_protocol)}-${var.network}"
+  region           = "${var.region}"
+  session_affinity = "${var.session_affinity}"
+}
+
+resource "google_compute_target_pool" "default_http" {
+  count            = "${replace(lower(var.lb_protocol), "http", "") == lower(var.lb_protocol) ? 0 : 1}"
+  project          = "${var.project}"
+  name             = "${var.name}-http-${var.network}"
   region           = "${var.region}"
   session_affinity = "${var.session_affinity}"
 
-  health_checks = [
-    "${google_compute_http_health_check.default.name}",
-  ]
+  health_checks = ["${google_compute_http_health_check.default.name}"]
 }
 
 resource "google_compute_http_health_check" "default" {
+  count        = "${lower(var.lb_protocol) == "http" ? 1 : 0}"
   project      = "${var.project}"
-  name         = "${var.name}-hc"
+  name         = "${var.name}-${var.network}-http-hc"
   request_path = "/"
   port         = "${var.service_port}"
 }
 
 resource "google_compute_firewall" "default-lb-fw" {
   project = "${var.firewall_project == "" ? var.project : var.firewall_project}"
-  name    = "${var.name}-vm-service"
+  name    = "${var.name}-${lower(var.lb_protocol)}-${var.network}-vm-service"
   network = "${var.network}"
 
   allow {
-    protocol = "tcp"
+    protocol = "${replace(lower(var.lb_protocol), "http", "") == lower(var.lb_protocol) ? lower(var.lb_protocol) : "tcp"}"
     ports    = ["${var.service_port}"]
   }
 
