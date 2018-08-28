@@ -34,6 +34,10 @@ resource "google_compute_target_pool" "default_non_http" {
   name             = "${var.name}-${lower(var.lb_protocol)}-${var.network}"
   region           = "${var.region}"
   session_affinity = "${var.session_affinity}"
+
+  lifecycle = {
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_target_pool" "default_http" {
@@ -44,6 +48,10 @@ resource "google_compute_target_pool" "default_http" {
   session_affinity = "${var.session_affinity}"
 
   health_checks = ["${google_compute_http_health_check.default.name}"]
+
+  lifecycle = {
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_http_health_check" "default" {
