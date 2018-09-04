@@ -52,6 +52,11 @@ variable service_port {
   description = "The port your service is listening on."
 }
 
+variable "source_ranges" {
+  description = "CIDR range to which access is allowed (default is 0.0.0.0/0)"
+  default     = "0.0.0.0/0"
+}
+
 variable target_tags {
   description = "List of target tags to allow traffic using firewall rule."
   type        = "list"
